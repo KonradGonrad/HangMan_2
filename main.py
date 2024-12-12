@@ -358,7 +358,7 @@ class Game(QWidget):
     def game_status(self):
         self.start_time = time.time()
         #self.WORD_TO_GUESS = choose_word()
-        self.WORD_TO_GUESS = "game"
+        self.WORD_TO_GUESS = "fraction"
         self.ITER = 0
         self.LETTERS = ["_" for i in range(len(self.WORD_TO_GUESS))]
         self.LETTERS_TO_DISPLAY = " ".join(self.LETTERS)
@@ -581,7 +581,8 @@ class Results(QWidget):
         self.results_header_label.setText("You have won!" if win == True else "You lost...")
         self.results_content_score.setText(f"Points: {points}")
         self.results_content_time.setText(f"Time: {time}")
-        #QTimer.singleShot(50, self.save_score(game_score = [0, 0, True]))
+        if win:
+            add_to_base(int(points))
 
 
 
@@ -697,13 +698,13 @@ class Ranking(QWidget):
             scroll_content_layout = QVBoxLayout()
             scroll_content_widget.setLayout(scroll_content_layout)
 
-            for index, (username, score, date) in enumerate(results, start=1):
+            for index, (score, date) in enumerate(results, start=1):
                 row_widget = QWidget()
                 row_layout = QHBoxLayout()
                 row_layout.setContentsMargins(10, 10, 10, 10)
 
                 position_label = QLabel(f"{index}")
-                username_label = QLabel(username)
+                username_label = QLabel(date)
                 score_label = QLabel(f"{str(score)} points")
 
                 row_layout.addWidget(position_label)
