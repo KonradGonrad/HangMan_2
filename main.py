@@ -9,6 +9,7 @@ from hangman import hangman_stage
 from words import choose_word
 from program import hangman
 from ranking_database import add_to_base, fetch_all_scores
+from typing import List
 
 # TO do
 # - after game screen; czas, wynik, opcja zagrania od nowa
@@ -448,7 +449,6 @@ class Results(QWidget):
 
         
         self.initUI()
-        self.open_saving_panel()
 
 
     def initUI(self):
@@ -570,10 +570,6 @@ class Results(QWidget):
         shadow_effect.setColor(QColor(color))
         widget.setGraphicsEffect(shadow_effect)
 
-    def open_saving_panel(self):
-        if self.results_header_label.text() == "You have won!":
-            QTimer.singleShot(10, self.save_score)
-
     def receive_signal(self, points_time_win_list):
         self.update_results(points_time_win_list)
 
@@ -585,6 +581,8 @@ class Results(QWidget):
         self.results_header_label.setText("You have won!" if win == True else "You lost...")
         self.results_content_score.setText(f"Points: {points}")
         self.results_content_time.setText(f"Time: {time}")
+        #QTimer.singleShot(50, self.save_score(game_score = [0, 0, True]))
+
 
 
     def on_show_result(self, points_time_win_list):
@@ -760,9 +758,10 @@ class Ranking(QWidget):
 
 class Save_score_window(QDialog):
     # Do dokonczenia
-    instance = None
-    def __init__(self,  parent=None):
+    def __init__(self, game_score=List, parent=None):
         super().__init__(parent)
+        POINTS = game_score[0]
+        TIME = game_score[1]
         monitor = get_monitors()
         main_screen = monitor[0]
 
@@ -775,8 +774,8 @@ class Save_score_window(QDialog):
 
         provide_layout = QHBoxLayout()
         provide_widget = QWidget()
-        self.name = QLineEdit()
-        self.name.setPlaceholderText("Provide your name...")
+        name = QLineEdit()
+        name.setPlaceholderText("Provide your name...")
         provide_layout.addWidget(name)
         provide_widget.setFixedHeight(50)
         provide_widget.setLayout(provide_layout)
@@ -824,14 +823,11 @@ class Save_score_window(QDialog):
                            """)
         
         skip_button.clicked.connect(self.close_window)
-        accept_button.clicked.connect(self.append_to_base)
+        accept_button.clicked.connect(self.append_to_base(POINTS=POINTS, NAME=name.text))
 
         main_layout.addWidget(provide_widget)
         main_layout.addWidget(button_widget)
         self.setLayout(main_layout)
-
-    def receive_information(self, information):
-        pass
 
     def apply_shadow_effect_event(self, widget, color):
         shadow_effect = QGraphicsDropShadowEffect(self)
@@ -843,8 +839,10 @@ class Save_score_window(QDialog):
     def close_window(self):
         self.close()
 
-    def append_to_base(self):
-            pass
+    def append_to_base(self, POINTS, NAME ):
+        add_to_base(player_name= NAME,
+                    score= POINTS
+                    )
 
 class Letter_again_window(QDialog):
     # Do dokonczenia
@@ -980,9 +978,9 @@ class MainWindow(QMainWindow):
         """Exit from app"""
         QApplication.quit()
 
-    def save_score(self):
+    def save_score(self, game_score):
         """Pop up window with save score option"""
-        popup = Save_score_window(self)
+        popup = Save_score_window(game_score)
         popup.exec()
 
     def same_letter(self, letters_used):
